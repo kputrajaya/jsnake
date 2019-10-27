@@ -1,24 +1,92 @@
+import { remote } from 'electron';
 import 'phaser';
 
-import phaserPng from '../assets/phaser.png';
+import { Direction } from '../models/definitions';
+import { Snake } from '../models/snake';
 
 export class MainScene extends Phaser.Scene {
-  private image!: Phaser.GameObjects.Image;
+  private sizeX: number;
+  private sizeY: number;
+  private snake: Snake;
+
+  private graphics!: Phaser.GameObjects.Graphics;
+  private gridWidth!: number;
+  private gridHeight!: number;
+  private nextRun = 0;
 
   constructor() {
-    super({ key: 'MainScene' });
-  }
+    super({key: 'MainScene'});
 
-  public preload() {
-    this.load.image('phaser', phaserPng);
+    // Initialize grid parameters
+    const centerX = 7;
+    const centerY = 7;
+    this.sizeX = centerX * 2 + 1;
+    this.sizeY = centerY * 2 + 1;
+
+    // Initialize snake
+    this.snake = new Snake({x: this.sizeX, y: this.sizeY});
   }
 
   public create() {
-    this.image = this.add.image(400, 300, 'phaser');
+    // Rendering
+    this.cameras.main.setBackgroundColor(0X173F5F);
+    const { width, height } = this.sys.game.canvas;
+    this.gridWidth = width / this.sizeX;
+    this.gridHeight = height / this.sizeY;
+    this.graphics = this.add.graphics({x: 0, y: 0});
 
-    this.input.on('pointerdown', (event: any) => {
-      this.image.x = event.x;
-      this.image.y = event.y;
+    // Keyboard events
+    this.input.keyboard
+      .on('keydown-UP', () => this.snake.changeDirection(Direction.UP));
+    this.input.keyboard
+      .on('keydown-RIGHT', () => this.snake.changeDirection(Direction.RIGHT));
+    this.input.keyboard
+      .on('keydown-DOWN', () => this.snake.changeDirection(Direction.DOWN));
+    this.input.keyboard
+      .on('keydown-LEFT', () => this.snake.changeDirection(Direction.LEFT));
+  }
+
+  public update(time: number) {
+    // Run every second
+    if (this.nextRun > time) {
+      return;
+    }
+
+    if (!this.snake.alive) {
+      remote.dialog.showMessageBox({
+        message: 'You lose!',
+        detail: `Your snake was ${this.snake.bodyCoords.length}-block long.`,
+      },
+      () => {
+        // Reinitialize snake
+        this.snake = new Snake({x: this.sizeX, y: this.sizeY});
+      });
+      return;
+    }
+
+    // Tick
+    this.snake.tick();
+    this.nextRun = time + 100;
+    this.graphics.clear();
+
+    // Draw snake body
+    this.graphics.fillStyle(0x3CAEA3, 1.0);
+    this.snake.bodyCoords.forEach((coord) => {
+      this.graphics.fillRect(
+        coord.x * this.gridWidth,
+        coord.y * this.gridHeight,
+        this.gridWidth,
+        this.gridHeight,
+      );
     });
+
+    // Draw food
+    this.graphics.fillStyle(0xED553B, 1.0);
+    this.graphics.fillRect(
+      this.snake.foodCoord.x * this.gridWidth,
+      this.snake.foodCoord.y * this.gridHeight,
+      this.gridWidth,
+      this.gridHeight,
+    );
   }
 }

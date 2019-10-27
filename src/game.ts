@@ -1,8 +1,8 @@
-import { MainScene } from './scenes/mainScene';
+import {MainScene} from './scenes/mainScene';
 
 const config: GameConfig = {
   type: Phaser.AUTO,
-  width: 800,
+  width: 600,
   height: 600,
   scene: [MainScene],
 };

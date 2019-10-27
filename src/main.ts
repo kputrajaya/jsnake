@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import {app, BrowserWindow} from 'electron';
 import * as path from 'path';
 
 // Let electron reloads by itself
@@ -12,8 +12,8 @@ let mainWindow: Electron.BrowserWindow | null;
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 700,
+    width: 900,
+    height: 600,
     webPreferences: {
       nodeIntegration: true,
     },

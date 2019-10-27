@@ -7,6 +7,9 @@
       "./typings",
       "./node_modules/"
     ],
+    "lib": [
+      "es7",
+    ],
   },
   "include": [
     "src/**/*.ts",

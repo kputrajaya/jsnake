@@ -1,50 +1,45 @@
 import 'phaser';
 
-import { Coordinate, Direction } from './definitions';
+import { Direction } from './enum';
 
 export class Snake {
-  public direction: Direction;
-  public bodyCoords: Coordinate[];
-  public foodCoord: Coordinate;
-  public alive: boolean;
+  public bodyCoords!: Phaser.Geom.Point[];
+  public foodCoord!: Phaser.Geom.Point;
+  public alive!: boolean;
+  public speed!: number;
 
-  private lastDirection: Direction;
-  private boundary: Coordinate;
-  private allCoords: Coordinate[];
+  private boundary: Phaser.Geom.Point;
+  private allCoords: Phaser.Geom.Point[];
+  private direction!: Direction;
+  private lastDirection!: Direction;
 
-  constructor(boundary: Coordinate) {
-    this.direction = Direction.UP;
-    this.bodyCoords = [
-      {
-        x: Math.floor(boundary.x / 2),
-        y: Math.ceil(boundary.y / 2),
-      },
-      {
-        x: Math.floor(boundary.x / 2),
-        y: Math.floor(boundary.y / 2),
-      },
-    ];
-    this.foodCoord = this.bodyCoords[0];
-    this.alive = true;
-
-    this.lastDirection = Direction.UP;
-    this.boundary = boundary;
+  constructor(sizeX: number, sizeY: number) {
+    // Initializations
+    this.boundary = new Phaser.Geom.Point(sizeX, sizeY);
     this.allCoords = [];
-    for (let i = 0; i < this.boundary.x; i++) {
-      for (let j = 0; j < this.boundary.y; j++) {
-        this.allCoords.push({x: i, y: j});
+    for (let i = 0; i < sizeX; i++) {
+      for (let j = 0; j < sizeY; j++) {
+        this.allCoords.push(new Phaser.Geom.Point(i, j));
       }
     }
 
-    this.resetFood();
+    // Initialize game
+    this.resetAll();
   }
 
-  public changeDirection(direction: Direction) {
-    // Prevent opposites
-    if (this.lastDirection + direction === 3) {
-      return;
-    }
-    this.direction = direction;
+  public resetAll() {
+    this.bodyCoords = [
+      new Phaser.Geom.Point(
+        Math.floor(this.boundary.x / 2),
+        Math.floor(this.boundary.y / 2)),
+    ];
+    this.foodCoord = this.bodyCoords[0];
+    this.resetFood();
+
+    this.alive = true;
+    this.speed = 200;
+    this.direction = Direction.UP;
+    this.lastDirection = Direction.UP;
   }
 
   public resetFood() {
@@ -57,6 +52,14 @@ export class Snake {
     this.foodCoord = unusedCoords[randomIndex];
   }
 
+  public changeDirection(direction: Direction) {
+    // Prevent opposites
+    if (this.lastDirection + direction === 3) {
+      return;
+    }
+    this.direction = direction;
+  }
+
   public tick() {
     if (!this.alive) {
       return;
@@ -64,7 +67,7 @@ export class Snake {
 
     // Determine next movement
     const last = this.bodyCoords[this.bodyCoords.length - 1];
-    const next: Coordinate = {x: last.x, y: last.y};
+    const next = new Phaser.Geom.Point(last.x, last.y);
     switch (this.direction) {
       case Direction.UP:
         next.y = (next.y - 1 + this.boundary.y) % this.boundary.y;
@@ -91,16 +94,17 @@ export class Snake {
     // Move snake's head
     this.bodyCoords.push(next);
 
-    // Move snake's tail
+    // Move snake's tail (don't elongate snake)
     if (next.x !== this.foodCoord.x || next.y !== this.foodCoord.y) {
       this.bodyCoords.shift();
-    // Find new position for food
+    // Find new position for food and increase speed
     } else {
       this.resetFood();
+      this.speed -= this.speed > 50 ? 5 : 0;
     }
   }
 
-  private coordsExclude(first: Coordinate[], second: Coordinate[]) {
+  private coordsExclude(first: Phaser.Geom.Point[], second: Phaser.Geom.Point[]) {
     const secondSet = new Set(second.map((coord) => `${coord.x}-${coord.y}`));
     return first.filter((coord) => !secondSet.has(`${coord.x}-${coord.y}`));
   }

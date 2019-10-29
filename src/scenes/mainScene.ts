@@ -1,18 +1,18 @@
 import { remote } from 'electron';
 import 'phaser';
 
-import { Direction } from '../models/definitions';
+import { Direction } from '../models/enum';
 import { Snake } from '../models/snake';
 
 export class MainScene extends Phaser.Scene {
   private sizeX: number;
   private sizeY: number;
   private snake: Snake;
+  private nextRun: number;
 
   private graphics!: Phaser.GameObjects.Graphics;
   private gridWidth!: number;
   private gridHeight!: number;
-  private nextRun = 0;
 
   constructor() {
     super({key: 'MainScene'});
@@ -24,7 +24,8 @@ export class MainScene extends Phaser.Scene {
     this.sizeY = centerY * 2 + 1;
 
     // Initialize snake
-    this.snake = new Snake({x: this.sizeX, y: this.sizeY});
+    this.snake = new Snake(this.sizeX, this.sizeY);
+    this.nextRun = 0;
   }
 
   public create() {
@@ -57,16 +58,13 @@ export class MainScene extends Phaser.Scene {
         message: 'You lose!',
         detail: `Your snake was ${this.snake.bodyCoords.length}-block long.`,
       },
-      () => {
-        // Reinitialize snake
-        this.snake = new Snake({x: this.sizeX, y: this.sizeY});
-      });
+      () => this.snake.resetAll());
       return;
     }
 
     // Tick
     this.snake.tick();
-    this.nextRun = time + 100;
+    this.nextRun = time + this.snake.speed;
     this.graphics.clear();
 
     // Draw snake body

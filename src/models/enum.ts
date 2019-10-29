@@ -4,8 +4,3 @@ export enum Direction {
     LEFT = 2,
     DOWN = 3,
 }
-
-export interface Coordinate {
-    x: number;
-    y: number;
-}

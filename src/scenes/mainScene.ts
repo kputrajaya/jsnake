@@ -18,8 +18,8 @@ export class MainScene extends Phaser.Scene {
     super({key: 'MainScene'});
 
     // Initialize grid parameters
-    const centerX = 7;
-    const centerY = 7;
+    const centerX = 13;
+    const centerY = 13;
     this.sizeX = centerX * 2 + 1;
     this.sizeY = centerY * 2 + 1;
 

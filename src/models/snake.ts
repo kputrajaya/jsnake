@@ -54,7 +54,7 @@ export class Snake {
 
   public changeDirection(direction: Direction) {
     // Prevent opposites
-    if (this.lastDirection + direction === 3) {
+    if (direction + this.lastDirection === 3) {
       return;
     }
     this.direction = direction;
